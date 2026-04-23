@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASCII Wave</title>
+    <style>
+        * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        }
+
+        body {
+        background: #000;
+        color: #fff;
+        font-family: monospace;
+        overflow: hidden;
+        }
+
+        canvas {
+        display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // This is the final version.
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d", { alpha: false });
+
+        const chars = ":+*#%@", cellW = 18, cellH = 22, font = "16px monospace";
+        let w, h, cols, rows, t = 0, dist = [], glyphs = [];
+
+        function makeGlyphs() {
+            glyphs = [...chars].map(ch => {
+                const c = document.createElement("canvas");
+                c.width = cellW;
+                c.height = cellH;
+                const g = c.getContext("2d");
+                g.font = font;
+                g.textBaseline = "top";
+                g.fillStyle = "#fff";
+                g.fillText(ch, 0, 0);
+                return c;
+            });
+        }
+
+        function resize() {
+            w = canvas.width = innerWidth;
+            h = canvas.height = innerHeight;
+            cols = w / cellW | 0;
+            rows = h / cellH | 0;
+            dist = Array.from({ length: rows }, (_, y) =>
+                Float32Array.from({ length: cols }, (_, x) => {
+                const dx = x - cols / 2, dy = y - rows / 2;
+                return Math.sqrt(dx * dx + dy * dy);
+                })
+            );
+        }
+
+        addEventListener("resize", resize);
+        makeGlyphs();
+        resize();
+
+        function draw() {
+        t += 0.01;
+
+        ctx.globalAlpha = 1;
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, w, h);
+
+            for (let y = 0; y < rows; y++) {
+                const py = y * cellH, row = dist[y];
+                for (let x = 0; x < cols; x++) {
+                const wave = Math.sin(row[x] * 0.3 - t * 3);
+                ctx.globalAlpha = (wave + 1) / 2;
+
+                const index = Math.round((wave + 1) / 2 * (chars.length - 1));
+                ctx.drawImage(glyphs[index], x * cellW, py);
+                }
+            }
+
+            ctx.globalAlpha = 1;
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>
