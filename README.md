@@ -6,8 +6,4 @@ Experiment 1 - YES
 
 Experiment 2 - YES
 
-Experiment 3
-
-Experiment 4
-
-Experiment 5
+Experiment 3 - YES
